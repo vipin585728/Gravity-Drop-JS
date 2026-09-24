@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Physics Gravity Box</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #121212;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: monospace;
+        }
+        .title {
+            position: absolute;
+            top: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title">Tap to Drop Emojis ✨</div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const emojis = ['🔥', '💻', '⚡', '🚀', '⭐', '💎', '💡'];
+        let particles = [];
+
+        class EmojiParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 20 + 20;
+                this.emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                this.speedX = (Math.random() - 0.5) * 6;
+                this.speedY = Math.random() * -4 - 2;
+                this.gravity = 0.3;
+                this.bounce = 0.7;
+            }
+            update() {
+                this.speedY += this.gravity;
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Floor collision
+                if (this.y + this.size > canvas.height) {
+                    this.y = canvas.height - this.size;
+                    this.speedY *= -this.bounce;
+                }
+                // Wall collision
+                if (this.x < 0 || this.x > canvas.width) {
+                    this.speedX *= -1;
+                }
+            }
+            draw() {
+                ctx.font = `${this.size}px sans-serif`;
+                ctx.fillText(this.emoji, this.x, this.y);
+            }
+        }
+
+        window.addEventListener('click', (e) => {
+            for(let i=0; i<5; i++) {
+                particles.push(new EmojiParticle(e.clientX, e.clientY));
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            particles.push(new EmojiParticle(e.touches[0].clientX, e.touches[0].clientY));
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
